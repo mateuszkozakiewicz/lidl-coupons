@@ -28,15 +28,15 @@ type Config struct {
 func Load() Config {
 	return Config{
 		Lidl: &LidlConfig{
-			ApiURL:   envOrDefault("LIDL_API_URL", "https://www.lidl.pl/prm/api/v1/PL/"),
-			LoginURL: envOrDefault("LIDL_LOGIN_URL", "https://www.lidl.pl/mla/"),
-			Login:    os.Getenv("LIDL_LOGIN"),
-			Password: os.Getenv("LIDL_PASSWORD"),
-			Token:    os.Getenv("LIDL_TOKEN"),
+			ApiURL:   envOrDefault("API_URL", "https://www.lidl.pl/prm/api/v1/PL/"),
+			LoginURL: envOrDefault("LOGIN_URL", "https://www.lidl.pl/mla/"),
+			Login:    os.Getenv("LOGIN"),
+			Password: os.Getenv("PASSWORD"),
+			Token:    os.Getenv("TOKEN"),
 		},
 		Notification: &NotificationConfig{
-			Username:   os.Getenv("DISCORD_USERNAME"),
-			WebhookURL: envOrDefault("DISCORD_WEBHOOK_URL", "Lidl Bot"),
+			Username:   envOrDefault("USERNAME", "Lidl Bot"),
+			WebhookURL: os.Getenv("WEBHOOK_URL"),
 		},
 		LogLevel: getLogLevel(envOrDefault("LOG_LEVEL", "warn")),
 	}
