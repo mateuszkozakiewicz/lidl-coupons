@@ -12,7 +12,7 @@
   },
   "packageRules": [
     {
-      "matchManagers": ["dockerfile", "gomod"],
+      "matchManagers": ["dockerfile", "gomod", "github-actions"],
       "ignoreTests": true,
       "automerge": true
     },
