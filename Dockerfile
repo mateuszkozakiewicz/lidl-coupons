@@ -7,4 +7,4 @@ RUN go run github.com/mxschmitt/playwright-go/cmd/playwright@v0.6100.0 install c
 COPY lidl-coupons lidl-coupons
 
 USER 65532:65532
-ENTRYPOINT ["lidl-coupons"]
+ENTRYPOINT ["/app/lidl-coupons"]
