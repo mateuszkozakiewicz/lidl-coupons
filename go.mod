@@ -6,7 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gtuk/discordwebhook v1.2.0
 	github.com/mxschmitt/playwright-go v0.6100.0
-	github.com/rs/zerolog v1.35.0
+	github.com/rs/zerolog v1.35.1
 )
 
 require (
