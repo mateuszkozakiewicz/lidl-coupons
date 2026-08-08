@@ -19,15 +19,22 @@ func (n *Notifier) send(message discordwebhook.Message) error {
 }
 
 func (n *Notifier) NotifyDiscord(promotions []lidl.Promotion) error {
-	message := discordwebhook.Message{
-		Username: &n.cfg.Username,
-		Content:  formatMessage(promotions),
+	messages := formatMessages(promotions)
+	for _, msg := range *messages {
+		message := discordwebhook.Message{
+			Username: &n.cfg.Username,
+			Content:  &msg,
+		}
+		if err := n.send(message); err != nil {
+			return err
+		}
 	}
-	return n.send(message)
+	return nil
 }
 
-func formatMessage(promotions []lidl.Promotion) *string {
-	var message string
+func formatMessages(promotions []lidl.Promotion) *[]string {
+	var messages[] string
+	msg := ""
 	for _, p := range promotions {
 		details := strings.ReplaceAll(p.Offer, "*", "")
 		details = strings.ReplaceAll(details, "\n", " ")
@@ -38,7 +45,14 @@ func formatMessage(promotions []lidl.Promotion) *string {
 			title = strings.ReplaceAll(title, "_", " ")
 			details += " _(" + title + ")_"
 		}
-		message += "**" + p.Description + "**" + ": " + details + "\n"
+		line := "**" + p.Description + "**" + ": " + details + "\n"
+		if len(msg)+len(line) > 1900 {
+			messages = append(messages, msg)
+			msg = line
+		} else {
+			msg += line
+		}
 	}
-	return &message
+	messages = append(messages, msg)
+	return &messages
 }
