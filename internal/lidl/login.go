@@ -30,7 +30,8 @@ func (c *Client) login() error {
 	}
 
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
+		Headless: playwright.Bool(true),
+		Channel:  playwright.String("chromium"),
 	})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -66,19 +67,19 @@ func (c *Client) login() error {
 		log.Error().Msg(err.Error())
 		return errors.New("could not press button:next with email")
 	}
-	log.Info().Msg("email submitted")
+	log.Debug().Msg("email submitted")
 
 	if err = page.GetByTestId(passwordInputTestId).Fill(c.cfg.Password); err != nil {
 		log.Error().Msg(err.Error())
 		return errors.New("could not fill password")
 	}
-	log.Info().Msg("password input filled")
+	log.Debug().Msg("password input filled")
 
 	if err = page.GetByTestId(passwordNextButtonTestId).Click(); err != nil {
 		log.Error().Msg(err.Error())
 		return errors.New("could not press button:next with password")
 	}
-	log.Info().Msg("password submitted")
+	log.Debug().Msg("password submitted")
 
 	// after login there user will be redirected several times and land back on the original login URL
 	// we need to wait for the final URL to grab cookies
