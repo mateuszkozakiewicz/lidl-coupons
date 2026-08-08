@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"os"
+
+	"github.com/rs/zerolog"
+)
 
 type LidlConfig struct {
 	LoginURL string
@@ -18,6 +22,7 @@ type NotificationConfig struct {
 type Config struct {
 	Lidl         *LidlConfig
 	Notification *NotificationConfig
+	LogLevel     zerolog.Level
 }
 
 func Load() Config {
@@ -31,8 +36,9 @@ func Load() Config {
 		},
 		Notification: &NotificationConfig{
 			Username:   os.Getenv("DISCORD_USERNAME"),
-			WebhookURL: os.Getenv("DISCORD_WEBHOOK_URL"),
+			WebhookURL: envOrDefault("DISCORD_WEBHOOK_URL", "Lidl Bot"),
 		},
+		LogLevel: getLogLevel(envOrDefault("LOG_LEVEL", "warn")),
 	}
 }
 
@@ -41,4 +47,12 @@ func envOrDefault(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getLogLevel(level string) zerolog.Level {
+	parsed, err := zerolog.ParseLevel(level)
+	if err != nil {
+		return zerolog.InfoLevel
+	}
+	return parsed
 }

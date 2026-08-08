@@ -6,13 +6,15 @@ import (
 	"github.com/mateuszkozakiewicz/lidl-coupons/internal/config"
 	"github.com/mateuszkozakiewicz/lidl-coupons/internal/lidl"
 	"github.com/mateuszkozakiewicz/lidl-coupons/internal/notification"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	log.Info().Msg("starting Lidl coupons activator")
-
 	cfg := config.Load()
+	zerolog.SetGlobalLevel(cfg.LogLevel)
+
+	log.Info().Msg("starting lidl-coupons")
 
 	lidlClient := lidl.New(cfg.Lidl)
 	promotions, err := lidlClient.ActivateAllPromotions()
