@@ -29,6 +29,7 @@ func (c *Client) login() error {
 		log.Error().Msg(err.Error())
 		return errors.New("could not start Playwright")
 	}
+	defer pw.Stop()
 
 	ctx, err := pw.Chromium.LaunchPersistentContext(c.cfg.StoragePath, playwright.BrowserTypeLaunchPersistentContextOptions{
 		Headless: playwright.Bool(true),
@@ -38,6 +39,7 @@ func (c *Client) login() error {
 		log.Error().Msg(err.Error())
 		return errors.New("could not launch browser")
 	}
+	defer ctx.Close()
 	ctx.SetDefaultTimeout(c.cfg.Timeout)
 	ctx.SetDefaultNavigationTimeout(c.cfg.Timeout)
 
