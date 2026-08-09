@@ -2,6 +2,7 @@ package lidl
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,7 +30,7 @@ func (c *Client) login() error {
 		return errors.New("could not start Playwright")
 	}
 
-	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
+	ctx, err := pw.Chromium.LaunchPersistentContext(c.cfg.StoragePath, playwright.BrowserTypeLaunchPersistentContextOptions{
 		Headless: playwright.Bool(true),
 		Channel:  playwright.String("chromium"),
 	})
@@ -37,14 +38,8 @@ func (c *Client) login() error {
 		log.Error().Msg(err.Error())
 		return errors.New("could not launch browser")
 	}
-
-	ctx, err := browser.NewContext(playwright.BrowserNewContextOptions{
-		IgnoreHttpsErrors: playwright.Bool(true),
-	})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("could not create context")
-	}
+	ctx.SetDefaultTimeout(c.cfg.Timeout)
+	ctx.SetDefaultNavigationTimeout(c.cfg.Timeout)
 
 	page, err := ctx.NewPage()
 	if err != nil {
@@ -56,36 +51,43 @@ func (c *Client) login() error {
 		log.Error().Msg(err.Error())
 		return errors.New("could not goto login URL")
 	}
-	err = page.GetByTestId(emailInputTestId).Fill(c.cfg.Login)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("could not fill email")
-	}
-	log.Debug().Msg("email input filled")
 
-	if err = page.GetByTestId(emailNextButtonTestId).Click(); err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("could not press button:next with email")
-	}
-	log.Debug().Msg("email submitted")
+	if strings.Contains(page.URL(), "accounts.lidl.com") {
+		log.Debug().Msg("redirected to accounts.lidl.com, login required")
+		err = page.GetByTestId(emailInputTestId).Fill(c.cfg.Login)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			return errors.New("could not fill email")
+		}
+		log.Debug().Msg("email input filled")
 
-	if err = page.GetByTestId(passwordInputTestId).Fill(c.cfg.Password); err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("could not fill password")
-	}
-	log.Debug().Msg("password input filled")
+		if err = page.GetByTestId(emailNextButtonTestId).Click(); err != nil {
+			log.Error().Msg(err.Error())
+			return errors.New("could not press button:next with email")
+		}
+		log.Debug().Msg("email submitted")
 
-	if err = page.GetByTestId(passwordNextButtonTestId).Click(); err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("could not press button:next with password")
-	}
-	log.Debug().Msg("password submitted")
+		if err = page.GetByTestId(passwordInputTestId).Fill(c.cfg.Password); err != nil {
+			log.Error().Msg(err.Error())
+			return errors.New("could not fill password")
+		}
+		log.Debug().Msg("password input filled")
 
-	// after login there user will be redirected several times and land back on the original login URL
-	// we need to wait for the final URL to grab cookies
-	if err := page.WaitForURL(c.cfg.LoginURL + "**"); err != nil {
-		log.Error().Msg(err.Error())
-		return errors.New("after login url did not match expected pattern: " + err.Error())
+		if err = page.GetByTestId(passwordNextButtonTestId).Click(); err != nil {
+			log.Error().Msg(err.Error())
+			return errors.New("could not press button:next with password")
+		}
+		log.Debug().Msg("password submitted")
+
+		// after login there user will be redirected several times and land back on the original login URL
+		// we need to wait for the final URL to grab cookies
+		if err := page.WaitForURL(c.cfg.LoginURL + "**"); err != nil {
+			log.Error().Msg(err.Error())
+			return errors.New("after login url did not match expected pattern: " + err.Error())
+		}
+		log.Info().Msg("login successful")
+	} else {
+		log.Debug().Msg("reusing previous session, no login required")
 	}
 
 	cookies, err := page.Context().Cookies()
@@ -95,7 +97,7 @@ func (c *Client) login() error {
 	for _, cookie := range cookies {
 		if cookie.Name == "authToken" {
 			c.cfg.Token = cookie.Value
-			log.Info().Msg("login successful")
+			log.Info().Msg("token retrieved from cookies")
 			return nil
 		}
 	}

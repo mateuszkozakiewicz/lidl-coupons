@@ -2,16 +2,19 @@ package config
 
 import (
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
 )
 
 type LidlConfig struct {
-	LoginURL string
-	ApiURL   string
-	Login    string
-	Password string
-	Token    string
+	LoginURL    string
+	ApiURL      string
+	StoragePath string
+	Timeout     float64
+	Login       string
+	Password    string
+	Token       string
 }
 
 type NotificationConfig struct {
@@ -28,11 +31,13 @@ type Config struct {
 func Load() Config {
 	return Config{
 		Lidl: &LidlConfig{
-			ApiURL:   envOrDefault("API_URL", "https://www.lidl.pl/prm/api/v1/PL/"),
-			LoginURL: envOrDefault("LOGIN_URL", "https://www.lidl.pl/mla/"),
-			Login:    os.Getenv("LOGIN"),
-			Password: os.Getenv("PASSWORD"),
-			Token:    os.Getenv("TOKEN"),
+			ApiURL:      envOrDefault("API_URL", "https://www.lidl.pl/prm/api/v1/PL/"),
+			LoginURL:    envOrDefault("LOGIN_URL", "https://www.lidl.pl/mla/"),
+			StoragePath: envOrDefault("STORAGE_PATH", "./playwright-data"),
+			Timeout:     getDurationMillis(envOrDefault("TIMEOUT", "5s")),
+			Login:       os.Getenv("LOGIN"),
+			Password:    os.Getenv("PASSWORD"),
+			Token:       os.Getenv("TOKEN"),
 		},
 		Notification: &NotificationConfig{
 			Username:   envOrDefault("USERNAME", "Lidl Bot"),
@@ -55,4 +60,12 @@ func getLogLevel(level string) zerolog.Level {
 		return zerolog.InfoLevel
 	}
 	return parsed
+}
+
+func getDurationMillis(value string) float64 {
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		return 30000
+	}
+	return float64(duration / time.Millisecond)
 }
