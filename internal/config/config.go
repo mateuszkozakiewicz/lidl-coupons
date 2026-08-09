@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -26,6 +27,7 @@ type Config struct {
 	Lidl         *LidlConfig
 	Notification *NotificationConfig
 	LogLevel     zerolog.Level
+	Retries      int
 }
 
 func Load() Config {
@@ -44,6 +46,7 @@ func Load() Config {
 			WebhookURL: os.Getenv("WEBHOOK_URL"),
 		},
 		LogLevel: getLogLevel(envOrDefault("LOG_LEVEL", "warn")),
+		Retries:  getInt(envOrDefault("RETRIES", "10")),
 	}
 }
 
@@ -68,4 +71,12 @@ func getDurationMillis(value string) float64 {
 		return 30000
 	}
 	return float64(duration / time.Millisecond)
+}
+
+func getInt(value string) int {
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return 10
+	}
+	return i
 }
