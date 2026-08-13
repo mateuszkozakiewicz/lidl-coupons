@@ -1,4 +1,4 @@
-name: Push image to GHCR
+name: Build and release
 
 on:
   push:
@@ -24,8 +24,6 @@ jobs:
       CGO_ENABLED: 0
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v7
         with:
@@ -51,30 +49,8 @@ jobs:
             MAJOR="${BASH_REMATCH[1]}"
             MINOR="${BASH_REMATCH[2]}"
             PATCH="${BASH_REMATCH[3]}"
-            git fetch --tags --force
             echo "version=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_OUTPUT
-            TAGS="${BASE}:${MAJOR}.${MINOR}.${PATCH}"
-            # Is there a tag v{MAJOR}.{MINOR}.X with X > PATCH?
-            NEWER_PATCH=$(git tag -l "v${MAJOR}.${MINOR}.*" \
-              | sed -nE "s/^v${MAJOR}\.${MINOR}\.([0-9]+)$/\1/p" \
-              | sort -n | awk -v p="$PATCH" '$1 > p' | head -1)
-            if [[ -z "$NEWER_PATCH" ]]; then
-              TAGS="${TAGS},${BASE}:${MAJOR}.${MINOR}"
-              # Is there a tag v{MAJOR}.X.Y with X > MINOR?
-              NEWER_MINOR=$(git tag -l "v${MAJOR}.*.*" \
-                | sed -nE "s/^v${MAJOR}\.([0-9]+)\.[0-9]+$/\1/p" \
-                | sort -n | awk -v m="$MINOR" '$1 > m' | head -1)
-              if [[ -z "$NEWER_MINOR" ]]; then
-                TAGS="${TAGS},${BASE}:${MAJOR}"
-                # Is there a tag v{MAJOR+1...}.X.Y with a higher major?
-                NEWER_MAJOR=$(git tag -l "v*.*.*" \
-                  | sed -nE "s/^v([0-9]+)\.[0-9]+\.[0-9]+$/\1/p" \
-                  | sort -n | awk -v M="$MAJOR" '$1 > M' | head -1)
-                if [[ -z "$NEWER_MAJOR" ]]; then
-                  TAGS="${TAGS},${BASE}:latest"
-                fi
-              fi
-            fi
+            TAGS="${BASE}:${MAJOR}.${MINOR}.${PATCH},${BASE}:${MAJOR}.${MINOR},${BASE}:${MAJOR},${BASE}:latest"
           else
             TAGS="${BASE}:${REF}"
           fi

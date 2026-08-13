@@ -33,7 +33,7 @@ func (n *Notifier) NotifyDiscord(promotions []lidl.Promotion) error {
 }
 
 func formatMessages(promotions []lidl.Promotion) *[]string {
-	var messages[] string
+	var messages []string
 	msg := ""
 	for _, p := range promotions {
 		details := strings.ReplaceAll(p.Offer, "*", "")
