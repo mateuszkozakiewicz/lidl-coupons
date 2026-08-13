@@ -1,0 +1,54 @@
+name: Auto-tag Renovate patches
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - "Dockerfile"
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check if commit is a Renovate patch
+        id: check
+        run: |
+          AUTHOR_NAME="${{ github.event.head_commit.author.name }}"
+          AUTHOR_EMAIL="${{ github.event.head_commit.author.email }}"
+          if [[ "${AUTHOR_NAME,,}" == *renovate* || "${AUTHOR_EMAIL,,}" == *renovate* ]]; then
+            echo "is_renovate=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_renovate=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Determine next patch version
+        if: steps.check.outputs.is_renovate == 'true'
+        id: version
+        run: |
+          git fetch --tags --force
+          LATEST=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n1)
+          if [[ -z "$LATEST" ]]; then
+            NEXT="v0.1.0"
+          else
+            IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST#v}"
+            NEXT="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
+          echo "next=${NEXT}" >> "$GITHUB_OUTPUT"
+      - name: Create and push tag
+        if: steps.check.outputs.is_renovate == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.next }}" -m "Release ${{ steps.version.outputs.next }}"
+          git push origin "${{ steps.version.outputs.next }}"
