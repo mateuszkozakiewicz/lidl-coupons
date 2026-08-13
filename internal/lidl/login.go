@@ -104,7 +104,7 @@ func checkTokenValid(token string) bool {
 		return false
 	}
 	exp, err := claims.GetExpirationTime()
-	if err != nil {
+	if err != nil || exp == nil {
 		return false
 	}
 	if time.Now().Unix() > int64(exp.Unix()) {
