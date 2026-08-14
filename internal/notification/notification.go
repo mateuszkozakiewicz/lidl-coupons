@@ -36,16 +36,13 @@ func formatMessages(promotions []lidl.Promotion) *[]string {
 	var messages []string
 	msg := ""
 	for _, p := range promotions {
-		details := strings.ReplaceAll(p.Offer, "*", "")
-		details = strings.ReplaceAll(details, "\n", " ")
-		details = strings.ReplaceAll(details, "_", " ")
+		details := sanitizeString(p.Offer)
+		description := sanitizeString(p.Description)
 		if len(p.Title) > 3 {
-			title := strings.ReplaceAll(p.Title, "*", "")
-			title = strings.ReplaceAll(title, "\n", " ")
-			title = strings.ReplaceAll(title, "_", " ")
+			title := sanitizeString(p.Title)
 			details += " _(" + title + ")_"
 		}
-		line := "**" + p.Description + "**" + ": " + details + "\n"
+		line := "**" + description + "**" + ": " + details + "\n"
 		if len(msg)+len(line) > 1900 {
 			messages = append(messages, msg)
 			msg = line
@@ -55,4 +52,11 @@ func formatMessages(promotions []lidl.Promotion) *[]string {
 	}
 	messages = append(messages, msg)
 	return &messages
+}
+
+func sanitizeString(input string) string {
+	sanitized := strings.ReplaceAll(input, "*", "")
+	sanitized = strings.ReplaceAll(sanitized, "\n", " ")
+	sanitized = strings.ReplaceAll(sanitized, "_", " ")
+	return sanitized
 }
