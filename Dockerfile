@@ -11,7 +11,9 @@ RUN bash -c "go run github.com/mxschmitt/playwright-go/cmd/playwright@\$(awk '/m
 
 COPY lidl-coupons lidl-coupons
 
-RUN chown -R nonroot:nonroot /app
+RUN mkdir -p /app/playwright-data && chown -R nonroot:nonroot /app
+
+VOLUME /app/playwright-data
 
 USER nonroot:nonroot
 ENTRYPOINT ["/app/lidl-coupons"]
