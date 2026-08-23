@@ -31,8 +31,11 @@ func (c *Client) login() error {
 	defer pw.Stop()
 
 	ctx, err := pw.Chromium.LaunchPersistentContext(c.cfg.StoragePath, playwright.BrowserTypeLaunchPersistentContextOptions{
-		Headless: playwright.Bool(true),
-		Channel:  playwright.String("chromium"),
+		Headless:  playwright.Bool(true),
+		Channel:   playwright.String("chromium"),
+		UserAgent: playwright.String("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36"),
+		Viewport:  &playwright.Size{Width: 1920, Height: 1080},
+		Locale:    playwright.String("en-US"),
 	})
 	if err != nil {
 		return errors.New("could not launch browser (" + err.Error() + ")")
