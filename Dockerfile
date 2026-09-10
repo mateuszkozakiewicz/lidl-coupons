@@ -14,7 +14,7 @@ RUN bash -c "go run github.com/mxschmitt/playwright-go/cmd/playwright@\$(awk '/m
 
 COPY lidl-coupons lidl-coupons
 COPY entrypoint.sh entrypoint.sh
-RUN mkdir -p /app/playwright-data && chown -R 65532:65532 /app && chmod +  /app/entrypoint.sh
+RUN mkdir -p /app/playwright-data && chown -R 65532:65532 /app && chmod +X /app/entrypoint.sh
 
 VOLUME /app/playwright-data
 
