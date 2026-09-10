@@ -16,6 +16,8 @@ type LidlConfig struct {
 	Login       string
 	Password    string
 	Token       string
+	Locale      string
+	Timezone    string
 }
 
 type NotificationConfig struct {
@@ -37,6 +39,8 @@ func Load() Config {
 			LoginURL:    envOrDefault("LOGIN_URL", "https://www.lidl.pl/mla/"),
 			StoragePath: envOrDefault("STORAGE_PATH", "./playwright-data"),
 			Timeout:     getDurationMillis(envOrDefault("TIMEOUT", "5s")),
+			Locale:      envOrDefault("LOCALE", "pl-PL"),
+			Timezone:    envOrDefault("TIMEZONE", "Europe/Warsaw"),
 			Login:       os.Getenv("LOGIN"),
 			Password:    os.Getenv("PASSWORD"),
 			Token:       os.Getenv("TOKEN"),

@@ -31,11 +31,12 @@ func (c *Client) login() error {
 	defer pw.Stop()
 
 	ctx, err := pw.Chromium.LaunchPersistentContext(c.cfg.StoragePath, playwright.BrowserTypeLaunchPersistentContextOptions{
-		Headless:  playwright.Bool(true),
-		Channel:   playwright.String("chromium"),
-		UserAgent: playwright.String("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36"),
-		Viewport:  &playwright.Size{Width: 1920, Height: 1080},
-		Locale:    playwright.String("en-US"),
+		Headless:          playwright.Bool(true),
+		IgnoreDefaultArgs: []string{"--enable-automation"},
+		Args:              []string{"--disable-blink-features=AutomationControlled"},
+		NoViewport:        playwright.Bool(true),
+		Locale:            playwright.String(c.cfg.Locale),
+		TimezoneId:        playwright.String(c.cfg.Timezone),
 	})
 	if err != nil {
 		return errors.New("could not launch browser (" + err.Error() + ")")
@@ -55,21 +56,24 @@ func (c *Client) login() error {
 
 	if strings.Contains(page.URL(), "accounts.lidl.com") {
 		log.Debug().Msg("redirected to accounts.lidl.com, login required")
-		err = page.GetByTestId(emailInputTestId).Fill(c.cfg.Login)
+		typingDelay := playwright.Float(80)
+		err = page.GetByTestId(emailInputTestId).PressSequentially(c.cfg.Login, playwright.LocatorPressSequentiallyOptions{Delay: typingDelay})
 		if err != nil {
 			return errors.New("could not fill email (" + err.Error() + ")")
 		}
 		log.Debug().Msg("email input filled")
+		page.WaitForTimeout(300)
 
 		if err = page.GetByTestId(emailNextButtonTestId).Click(); err != nil {
 			return errors.New("could not press button:next with email (" + err.Error() + ")")
 		}
 		log.Debug().Msg("email submitted")
 
-		if err = page.GetByTestId(passwordInputTestId).Fill(c.cfg.Password); err != nil {
+		if err = page.GetByTestId(passwordInputTestId).PressSequentially(c.cfg.Password, playwright.LocatorPressSequentiallyOptions{Delay: typingDelay}); err != nil {
 			return errors.New("could not fill password (" + err.Error() + ")")
 		}
 		log.Debug().Msg("password input filled")
+		page.WaitForTimeout(300)
 
 		if err = page.GetByTestId(passwordNextButtonTestId).Click(); err != nil {
 			return errors.New("could not press button:next with password (" + err.Error() + ")")
