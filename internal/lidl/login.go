@@ -31,7 +31,7 @@ func (c *Client) login() error {
 	defer pw.Stop()
 
 	ctx, err := pw.Chromium.LaunchPersistentContext(c.cfg.StoragePath, playwright.BrowserTypeLaunchPersistentContextOptions{
-		Headless:          playwright.Bool(true),
+		Headless:          playwright.Bool(false),
 		IgnoreDefaultArgs: []string{"--enable-automation"},
 		Args:              []string{"--disable-blink-features=AutomationControlled"},
 		NoViewport:        playwright.Bool(true),
