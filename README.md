@@ -11,6 +11,8 @@ Configuration happens via environment variables.
 |LOGIN_URL           |URL of the Lidl login page                                             |`https://www.lidl.pl/mla/`          |
 |STORAGE_PATH        |Path to store Playwright data                                          |`./playwright-data`                 |
 |TIMEOUT             |Timeout for Playwright operations                                      |`5s`                                |
+|LOCALE              |Locale for Playwright browser                                          |`pl-PL`                             |
+|TIMEZONE            |Timezone for Playwright browser                                        |`Europe/Warsaw`                     |
 |LOGIN               |Lidl account login (email)                                             |                                    |
 |PASSWORD            |Lidl account password                                                  |                                    |
 |TOKEN               |Lidl account token (optional, if not provided, login will be performed)|                                    |
